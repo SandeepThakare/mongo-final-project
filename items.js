@@ -52,32 +52,50 @@ function ItemDAO(database) {
         *
         */
 
-        var pipeline = [
-                { $group: {    
-                    _id: "$category",    
-                    num: { $sum: 1 }   
-                } 
-            }, 
-            { $sort: { _id: 1 } 
-        }];
+        var categories = [];
+        // var pipeline = [
+        //         { $group: {    
+        //             _id: "$category",    
+        //             num: { $sum: 1 }   
+        //         } 
+        //     }, 
+        //     { $sort: { _id: 1 } 
+        // }];
 
-        var category = {
-            _id: "All",
-            num: 9999
-        };
+        // var category = {
+        //     _id: "All",
+        //     num: 9999
+        // };
 
-        this.db.collection("item").aggregate(pipeline).toArray( (err, categories) => {
-            assert.equal(null, err);
+        // this.db.collection("item").aggregate(pipeline).toArray( (err, categories) => {
+        //     assert.equal(null, err);
 
-            var total = 0;
+        //     var total = 0;
 
-            for (let index = 0; index < categories.length; index++) {
-                total  += categories[index].num;                
-            }
+        //     for (let index = 0; index < categories.length; index++) {
+        //         total  += categories[index].num;                
+        //     }
 
-            categories.unshift({ _id: "All", num: total });
+        //     categories.unshift({ _id: "All", num: total });
+        //     callback(categories);
+        // });
+
+        var allNum = 0;
+    database.collection('item').aggregate([{$group: {_id: "$category", num: {$sum: 1}}}, {$sort: {_id: 1}}]).toArray(
+
+        function(err, docs){
+            assert.equal(err,null);
+            assert.notEqual(docs.length,0);
+
+            docs.forEach(function(doc){
+                allNum += doc.num;
+                categories.push(doc);
+            });
+
+            categories.unshift({_id: 'All', num: allNum});
             callback(categories);
-        });
+        }
+    );
 
         // categories.push(category)
 
@@ -114,24 +132,42 @@ function ItemDAO(database) {
          *
          */
 
-        var queryDoc;
+        // var queryDoc;
 
-        if(category == "All")
-            queryDoc = {};
-        else
-            queryDoc = { category : category };
+        // if(category == "All")
+        //     queryDoc = {};
+        // else
+        //     queryDoc = { category : category };
 
-        var cursor = this.db.collection("item").find(queryDoc);
+        // var cursor = this.db.collection("item").find(queryDoc);
 
-        cursor.skip(page*itemsPerPage);
+        // cursor.skip(page*itemsPerPage);
 
-        cursor.limit(itemsPerPage);
+        // cursor.limit(itemsPerPage);
 
-        cursor.toArray( (err, pageItems) => {
-            assert.equal(null, err);
+        // cursor.toArray( (err, pageItems) => {
+        //     assert.equal(null, err);
 
-            callback(pageItems);
-        })
+        //     callback(pageItems);
+        // })
+
+        var pageItems = [];
+
+        database.collection("item").find({"category":category}).skip(page*itemsPerPage).limit(itemsPerPage).toArray(
+
+            function(err, docs){
+                assert.equal(err,null);
+                //assert.notEqual(docs.length,0);
+    
+                docs.forEach(function(doc){
+                    pageItems.push(doc);
+                });
+    
+                callback(pageItems);
+    
+            }
+        );
+    
 
         // var pageItem = this.createDummyItem();
         // var pageItems = [];
@@ -152,7 +188,7 @@ function ItemDAO(database) {
         "use strict";
 
         var numItems = 0;
-
+        var queryDoc;
         /*
          * TODO-lab1C:
          *
@@ -170,7 +206,33 @@ function ItemDAO(database) {
 
          // TODO Include the following line in the appropriate
          // place within your code to pass the count to the callback.
-        callback(numItems);
+
+        // if(category == "All")
+        //     queryDoc = {};
+        // else
+        //     queryDoc = { category : category };
+        
+        // this.db.collection("item").find(queryDoc).count((err, totalCount) => {
+        //     assert.equal(null, err);
+        //     numItems = totalCount;
+        // })
+
+        // callback(numItems);
+
+        var allNum = 0;
+    this.db.collection('item').aggregate([{$group: {_id: "$category", num: {$sum: 1}}}, {$project: {_id:0, "category": "$_id", "num": 1} }]).toArray(
+
+        function(err, docs){
+            assert.equal(err,null);
+            assert.notEqual(docs.length,0);
+
+            docs.forEach(function(doc){
+                numItems += doc.num;
+            });
+
+            callback(numItems);
+        }
+    );
     }
 
 
