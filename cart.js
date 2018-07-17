@@ -178,6 +178,7 @@ function CartDAO(database) {
         "use strict";
 
         /*
+        
         * TODO-lab7
         *
         * LAB #7: Update the quantity of an item in the user's cart in the
