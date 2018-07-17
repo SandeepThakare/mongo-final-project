@@ -263,11 +263,26 @@ function ItemDAO(database) {
          *
          */
 
-        var item = this.createDummyItem();
-        var items = [];
-        for (var i=0; i<5; i++) {
-            items.push(item);
-        }
+        var queryDoc;
+        if(queryDoc.trim() == "")
+            queryDoc = {};
+        else
+            queryDoc = { $text: { $search: query } }
+
+        var cursor = this.db.collection("item").find(queryDoc);
+
+        cursor.skip(page*itemsPerPage);
+        cursor.limit(itemsPerPage);
+
+        cursor.toArray( (err, searchData) => {
+            
+        });
+
+        // var item = this.createDummyItem();
+        // var items = [];
+        // for (var i=0; i<5; i++) {
+        //     items.push(item);
+        // }
 
         // TODO-lab2A Replace all code above (in this method).
 
